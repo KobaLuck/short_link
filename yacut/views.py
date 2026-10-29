@@ -96,7 +96,7 @@ def files_view():
                 return (filename, download_link)
 
             async def process_files_async(file_list):
-                connector = aiohttp.TCPConnector(ssl=False)
+                connector = aiohttp.TCPConnector()
                 async with aiohttp.ClientSession(connector=connector) as session:
                     tasks = [upload_and_get_link(session, f) for f in file_list]
                     return await asyncio.gather(*tasks)

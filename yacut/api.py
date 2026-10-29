@@ -20,14 +20,21 @@ def create_id():
     data = request.get_json(silent=True)
     if data is None:
         return jsonify({'message': 'Отсутствует тело запроса'}), 400
+    if not isinstance(data, dict):
+        return jsonify({'message': 'Тело запроса должно быть объектом JSON'}), 400
     if 'url' not in data:
         return jsonify({'message': '"url" является обязательным полем!'}), 400
 
     original_url = data.get('url')
     custom_id = data.get('custom_id')
 
+    if not isinstance(original_url, str) or not original_url.strip() or len(original_url) > 2048:
+        return jsonify({'message': 'Указана недопустимая исходная ссылка'}), 400
+    if custom_id is not None and not isinstance(custom_id, str):
+        return jsonify({'message': 'Указано недопустимое имя для короткой ссылки'}), 400
+
     if custom_id:
-        if len(custom_id) > 16 or not _ALNUM_RE.match(custom_id) or custom_id == 'files':
+        if len(custom_id) > 16 or not _ALNUM_RE.fullmatch(custom_id) or custom_id == 'files':
             return jsonify({'message': 'Указано недопустимое имя для короткой ссылки'}), 400
         if URLMap.query.filter_by(short=custom_id).first():
             return jsonify({'message': 'Предложенный вариант короткой ссылки уже существует.'}), 400
